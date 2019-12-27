@@ -27,12 +27,12 @@ namespace AppForm.HubController
     public class HubRouter : IHubRouter
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly HubRouteMap _hubRouteMap;
+        private readonly IHubRouteMap _hubRouteMap;
         private readonly MethodInfo _genericExecute;
 
         public HubRouter(
             IServiceProvider serviceProvider,
-            HubRouteMap hubRouteMap)
+            IHubRouteMap hubRouteMap)
         {
             _serviceProvider = serviceProvider;
             _hubRouteMap = hubRouteMap;
@@ -92,8 +92,12 @@ namespace AppForm.HubController
             {
                 return arguments;
             }
+            if (methodDescriptor.ArgumentType.IsPrimitive || (methodDescriptor.ArgumentType == typeof(decimal)))
+            {
+                return Convert.ChangeType(arguments, methodDescriptor.ArgumentType);
+            }
 
-            return JsonConvert.DeserializeObject(arguments, methodDescriptor.ArgumentType.GetType());
+            return JsonConvert.DeserializeObject(arguments, methodDescriptor.ArgumentType);
         }
         
     }

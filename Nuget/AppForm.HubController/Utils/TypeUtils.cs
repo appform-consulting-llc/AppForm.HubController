@@ -15,6 +15,7 @@
  */
 
 using AppForm.HubController.Base;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -23,13 +24,32 @@ namespace AppForm.HubController.Utils
 {
     public static class TypeUtils
     {
+        private static IList<TypeInfo> _hubControllerList;
+
         public static IList<TypeInfo> GetHubControllerTypes()
         {
-            return Assembly
-                .GetEntryAssembly()
-                .DefinedTypes
-                .Where(t => typeof(BaseHubController).IsAssignableFrom(t) && typeof(BaseHubController) != t.UnderlyingSystemType)
-                .ToList();
+            if(_hubControllerList == null)
+            {
+                _hubControllerList = AppDomain.CurrentDomain.GetAssemblies()
+                 .SelectMany(GetTypes)
+                 .Where(t => typeof(BaseHubController).IsAssignableFrom(t) && typeof(BaseHubController) != t.UnderlyingSystemType)
+                 .Select(t => t.GetTypeInfo())
+                 .ToList();
+            }
+
+            return _hubControllerList;
+        }
+
+        private static Type[] GetTypes(Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (Exception)
+            {
+                return new Type[] { };
+            }
         }
     }
 }

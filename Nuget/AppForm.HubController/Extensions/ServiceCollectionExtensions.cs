@@ -32,7 +32,7 @@ namespace AppForm.HubController.Extensions
                 serviceCollection.TryAddScoped(hubControllerType);
             }
 
-            serviceCollection.TryAddSingleton<HubRouteMap>();
+            serviceCollection.TryAddSingleton<IHubRouteMap, HubRouteMap>();
 
             serviceCollection.TryAddScoped<IHubRouter, HubRouter>();
 

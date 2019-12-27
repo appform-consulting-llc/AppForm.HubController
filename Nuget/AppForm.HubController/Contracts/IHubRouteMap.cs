@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+using AppForm.HubController.Base;
 
 namespace AppForm.HubController.Contracts
 {
     public interface IHubRouteMap
     {
+        HubMethodDescriptor GetRouteHandler(string route);
     }
 }
