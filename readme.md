@@ -49,8 +49,7 @@ public class AppHub : AppFormHub
 
 #### Client Side (Javascript)
 
-The client side is also quite simple. (To be continued...)
-
+See the [AppForm.HubController Client Documentation](https://www.npmjs.com/package/@appformllc/hubcontroller).
 
 #### Summary
 
@@ -69,5 +68,5 @@ hubConnection.execute('demo/getNames')
  or
 
 ```javascript
-await hubConnection.execute('demo/getNames');
+var result = await hubConnection.execute('demo/getNames');
 ````
