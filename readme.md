@@ -26,7 +26,7 @@ public class DemoHubController : BaseHubController
 {
   private readonly MyService _myService;
 
-  public DockerHubController(MyService myService)
+  public DemoHubController(MyService myService)
   {
   	_myService = myService;
   }
