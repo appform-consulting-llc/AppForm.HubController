@@ -50,3 +50,24 @@ public class AppHub : AppFormHub
 #### Client Side (Javascript)
 
 The client side is also quite simple. (To be continued...)
+
+
+#### Summary
+
+Your new controller method can now be called by simply calling a single method client side now using async / promises. No more callback waiting management.
+
+```javascript
+hubConnection.execute('demo/getNames')
+  .then(result => {
+    console.log('success!', result);
+  })
+  .catch(error => {
+    console.error('uh oh!', error);
+  });
+```
+ 
+ or
+
+```javascript
+await hubConnection.execute('demo/getNames');
+````
