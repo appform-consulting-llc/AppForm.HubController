@@ -171,6 +171,7 @@ namespace AppForm.HubController.Tests.Base
         {
             var collection = new ServiceCollection();
             collection.UseHubRouter();
+            collection.AddLogging();
 
             return collection.BuildServiceProvider();
         }

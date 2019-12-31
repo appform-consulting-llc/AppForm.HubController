@@ -17,6 +17,8 @@
 using AppForm.HubController.Attributes;
 using AppForm.HubController.Contracts;
 using AppForm.HubController.Utils;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
@@ -27,11 +29,15 @@ namespace AppForm.HubController.Base
     {
         private const string HubControllerNameSuffix = "HUBCONTROLLER";
 
+        private readonly ILogger<HubRouteMap> _logger;
         private readonly ConcurrentDictionary<string, HubMethodDescriptor> _routeTable = new ConcurrentDictionary<string, HubMethodDescriptor>();
 
-        public HubRouteMap()
+        public HubRouteMap(ILogger<HubRouteMap> logger)
         {
+            _logger = logger;
             var controllerTypes = TypeUtils.GetHubControllerTypes();
+
+            _logger.LogDebug($"Loaded: {controllerTypes.Count} hub controllers");
 
             foreach (var controllerType in controllerTypes)
             {
@@ -43,12 +49,20 @@ namespace AppForm.HubController.Base
 
         public HubMethodDescriptor GetRouteHandler(string route)
         {
-            var routeKey = _routeTable.Keys.First(k => k.Equals(route.ToUpperInvariant()));
-            _routeTable.TryGetValue(routeKey, out var method);
+            try
+            {
+                var routeKey = _routeTable.Keys.First(k => k.Equals(route.ToUpperInvariant()));
+                _routeTable.TryGetValue(routeKey, out var method);
 
-            return method;
+                return method;
+            }
+            catch(ArgumentNullException ex)
+            {
+                _logger.LogError(ex, $"Route handler not found: {route}");
+                throw;
+            }
         }
-        
+
         private string GetControllerRouteName(TypeInfo controllerType)
         {
             var controllerName = controllerType.Name.ToUpperInvariant();
@@ -69,6 +83,8 @@ namespace AppForm.HubController.Base
 
         private void AddController(TypeInfo controllerType)
         {
+            _logger.LogDebug($"Loading hub controller: {controllerType.Name}");
+
             foreach (var method in controllerType.DeclaredMethods)
             {
                 AddControllerMethod(controllerType, method);

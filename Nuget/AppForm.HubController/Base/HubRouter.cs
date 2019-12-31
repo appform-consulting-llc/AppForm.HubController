@@ -17,6 +17,7 @@
 using AppForm.HubController.Base;
 using AppForm.HubController.Contracts;
 using AppForm.HubController.Models;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Reflection;
@@ -26,14 +27,17 @@ namespace AppForm.HubController
 {
     public class HubRouter : IHubRouter
     {
+        private readonly ILogger<HubRouter> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly IHubRouteMap _hubRouteMap;
         private readonly MethodInfo _genericExecute;
 
         public HubRouter(
+            ILogger<HubRouter> logger,
             IServiceProvider serviceProvider,
             IHubRouteMap hubRouteMap)
         {
+            _logger = logger;
             _serviceProvider = serviceProvider;
             _hubRouteMap = hubRouteMap;
 
@@ -42,15 +46,25 @@ namespace AppForm.HubController
 
         public async Task<object> HandleRequest(HubRequest hubRequest)
         {
-             var methodDescriptor = _hubRouteMap.GetRouteHandler(hubRequest.Route);
+            _logger.LogDebug($"Handling hub request: {hubRequest.Route}");
 
-            if(typeof(Task).IsAssignableFrom(methodDescriptor.Method.ReturnType))
+            var methodDescriptor = _hubRouteMap.GetRouteHandler(hubRequest.Route);
+
+            try
             {
-                var genericUnwrapMethod = _genericExecute.MakeGenericMethod(methodDescriptor.Method.ReturnType.GenericTypeArguments[0]);
-                return await (Task<object>)genericUnwrapMethod.Invoke(this, new object[] { hubRequest, methodDescriptor });
-            }
+                if (typeof(Task).IsAssignableFrom(methodDescriptor.Method.ReturnType))
+                {
+                    var genericUnwrapMethod = _genericExecute.MakeGenericMethod(methodDescriptor.Method.ReturnType.GenericTypeArguments[0]);
+                    return await (Task<object>)genericUnwrapMethod.Invoke(this, new object[] { hubRequest, methodDescriptor });
+                }
 
-            return ExecuteMethod(hubRequest, methodDescriptor);
+                return ExecuteMethod(hubRequest, methodDescriptor);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error executing route handler: {hubRequest.Route}");
+                throw;
+            }
         }
 
         private object ExecuteMethod(HubRequest hubRequest, HubMethodDescriptor methodDescriptor)
