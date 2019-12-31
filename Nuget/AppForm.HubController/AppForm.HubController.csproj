@@ -8,7 +8,7 @@
     <Description>ASP.NET web API controller pattern for a SignalR hub.</Description>
     <Copyright>2019</Copyright>
     <PackageProjectUrl>https://github.com/appform-consulting-llc/AppForm.HubController</PackageProjectUrl>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <RepositoryUrl>https://github.com/appform-consulting-llc/AppForm.HubController</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Signalr,Controller,Hub</PackageTags>
