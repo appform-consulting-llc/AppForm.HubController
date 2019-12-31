@@ -1,13 +1,11 @@
 ﻿using AppForm.HubController.Contracts;
-using AppForm.HubController.Extensions;
 using AppForm.HubController.Models;
 using AppForm.HubController.Tests.HubControllers;
+using AppForm.HubController.Tests.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace AppForm.HubController.Tests.Base
@@ -15,6 +13,50 @@ namespace AppForm.HubController.Tests.Base
     [TestClass]
     public class HubRouterTests
     {
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public async Task HandleRequest_MissingMethod_Fails()
+        {
+            var hubRouter = HubRouter;
+
+            var request = new HubRequest
+            {
+                Route = "Test/IntAsyncEmptyInputTest2"
+            };
+
+            await hubRouter.HandleRequest(request);
+        }
+
+        [TestMethod]
+        public async Task HandleRequest_Void_NoParam_Success()
+        {
+            var hubRouter = HubRouter;
+
+            var request = new HubRequest
+            {
+                Route = "Test/VoidEmptyInputTest"
+            };
+
+            var result = await hubRouter.HandleRequest(request);
+
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public async Task HandleRequest_AsyncEmpty_NoParam_Success()
+        {
+            var hubRouter = HubRouter;
+
+            var request = new HubRequest
+            {
+                Route = "Test/EmptyAsyncEmptyInputTest"
+            };
+
+            var result = await hubRouter.HandleRequest(request);
+
+            Assert.IsNull(result);
+        }
+
         [TestMethod]
         public async Task HandleRequest_AsyncInt_NoParam_Success()
         {
@@ -165,15 +207,6 @@ namespace AppForm.HubController.Tests.Base
             Assert.AreEqual(expectedResult.StringValue, ((TestHubRequest)result).StringValue);
         }
 
-        private IHubRouter HubRouter => CreateDependencyInjection().GetService<IHubRouter>();
-
-        private IServiceProvider CreateDependencyInjection()
-        {
-            var collection = new ServiceCollection();
-            collection.UseHubRouter();
-            collection.AddLogging();
-
-            return collection.BuildServiceProvider();
-        }
+        private IHubRouter HubRouter => DependencyInjection.CreateDependencyInjection().GetService<IHubRouter>();
     }
 }

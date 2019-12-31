@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System;
-
 namespace AppForm.HubController.Models
 {
     public class HubRequest
@@ -28,6 +26,6 @@ namespace AppForm.HubController.Models
 
         public object Result { get; set; }
 
-        public Exception Error { get; set; }
+        public string Error { get; set; }
     }
 }

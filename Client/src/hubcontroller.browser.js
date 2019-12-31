@@ -19,7 +19,6 @@
 
     signalR.HubConnectionBuilder.prototype.build = function() {
         var result = _oldBuild.call(this);
-        console.log('NEW BUILD',result)
 
         result._pendingCallbacks = {};
 
@@ -28,7 +27,7 @@
                 var request = {
                     route,
                     callbackId: uuidv4(),
-                    arguments: args
+                    arguments: JSON.stringify(args)
                 }
     
                 this._pendingCallbacks[request.callbackId] = {
@@ -45,8 +44,6 @@
         }
 
         result._handleExecuteRespose = function(response) {
-            console.debug("_handleExecuteRespose", response);
-    
             var pendingCallback = this._pendingCallbacks[response.callbackId];
             if (!pendingCallback) {
                 console.error(`unknown callbackId: ${response.callbackId}`);
@@ -67,8 +64,6 @@
             finally {
                 delete this._pendingCallbacks[response.callbackId];
             }
-    
-            console.debug('this._pendingCallbacks', this._pendingCallbacks);
         }
 
         result.on("$AfExecuteResult$", result._handleExecuteRespose);

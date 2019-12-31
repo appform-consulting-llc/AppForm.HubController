@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using System;
 
 namespace AppForm.HubController.Tests.Base
 {
@@ -16,6 +17,15 @@ namespace AppForm.HubController.Tests.Base
             var handler = map.GetRouteHandler("test/EmptyAsyncIntInputTest");
 
             Assert.IsNotNull(handler);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void HubRouteMap_NoHandler()
+        {
+            var map = new HubRouteMap(new Mock<ILogger<HubRouteMap>>().Object);
+
+            map.GetRouteHandler("test/EmptyAsyncIntInputTest2");
         }
     }
 }

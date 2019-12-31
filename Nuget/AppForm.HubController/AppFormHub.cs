@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Threading.Tasks;
 using AppForm.HubController.Models;
+using AppForm.HubController.Extensions;
 
 namespace AppForm.HubController
 {
@@ -39,7 +40,12 @@ namespace AppForm.HubController
             }
             catch(Exception ex)
             {
-                request.Error = ex;
+                request.Error = ex.Serialize();
+            }
+
+            if(Clients?.Caller == null)
+            {
+                return;
             }
 
             await Clients.Caller.SendAsync("$AfExecuteResult$", request).ConfigureAwait(false);

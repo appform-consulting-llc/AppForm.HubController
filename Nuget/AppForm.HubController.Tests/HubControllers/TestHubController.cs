@@ -1,11 +1,19 @@
 ﻿using AppForm.HubController.Base;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace AppForm.HubController.Tests.HubControllers
 {
     public class TestHubController : BaseHubController
     {
+        public void VoidEmptyInputTest()
+        {
+        }
+
+        public async Task EmptyAsyncEmptyInputTest()
+        {
+            await Task.Delay(10);
+        }
+
         public async Task EmptyAsyncIntInputTest(int testId)
         {
             await Task.Delay(10);

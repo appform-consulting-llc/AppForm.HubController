@@ -20,6 +20,7 @@ using AppForm.HubController.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -54,8 +55,7 @@ namespace AppForm.HubController
             {
                 if (typeof(Task).IsAssignableFrom(methodDescriptor.Method.ReturnType))
                 {
-                    var genericUnwrapMethod = _genericExecute.MakeGenericMethod(methodDescriptor.Method.ReturnType.GenericTypeArguments[0]);
-                    return await (Task<object>)genericUnwrapMethod.Invoke(this, new object[] { hubRequest, methodDescriptor });
+                    return await ExecuteTask(hubRequest, methodDescriptor);
                 }
 
                 return ExecuteMethod(hubRequest, methodDescriptor);
@@ -82,9 +82,36 @@ namespace AppForm.HubController
             }
         }
 
+        private async Task<object> ExecuteTask(HubRequest hubRequest, HubMethodDescriptor methodDescriptor)
+        {
+            if (!methodDescriptor.Method.ReturnType.GenericTypeArguments.Any())
+            {
+                await ExecuteEmptyTask(hubRequest, methodDescriptor);
+                return default;
+            }
+
+            var genericUnwrapMethod = _genericExecute.MakeGenericMethod(methodDescriptor.Method.ReturnType.GenericTypeArguments[0]);
+            return await (Task<object>)genericUnwrapMethod.Invoke(this, new object[] { hubRequest, methodDescriptor });
+        }
+
+        private async Task ExecuteEmptyTask(HubRequest hubRequest, HubMethodDescriptor methodDescriptor)
+        {
+            var controller = GetController(methodDescriptor);
+
+            if (methodDescriptor.ArgumentType != null)
+            {
+                var convertedArgument = ConvertArguments(hubRequest.Arguments, methodDescriptor);
+                await (Task)methodDescriptor.Method.Invoke(controller, new[] { convertedArgument });
+            }
+            else
+            {
+                await (Task)methodDescriptor.Method.Invoke(controller, null);
+            }
+        }
+
         private async Task<object> ExecuteGenericMethod<T>(HubRequest hubRequest, HubMethodDescriptor methodDescriptor)
         {
-            var controller = _serviceProvider.GetService(methodDescriptor.ControllerType);
+            var controller = GetController(methodDescriptor);
 
             T result;
             if (methodDescriptor.ArgumentType != null)
@@ -98,6 +125,16 @@ namespace AppForm.HubController
             }
 
             return result;
+        }
+
+        private object GetController(HubMethodDescriptor methodDescriptor)
+        {
+            return GetController(methodDescriptor.ControllerType);
+        }
+
+        private object GetController(TypeInfo controllerType)
+        {
+            return _serviceProvider.GetService(controllerType);
         }
 
         private object ConvertArguments(string arguments, HubMethodDescriptor methodDescriptor)

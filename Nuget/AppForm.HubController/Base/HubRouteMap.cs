@@ -37,7 +37,7 @@ namespace AppForm.HubController.Base
             _logger = logger;
             var controllerTypes = TypeUtils.GetHubControllerTypes();
 
-            _logger.LogDebug($"Loaded: {controllerTypes.Count} hub controllers");
+            _logger.LogInformation($"Loaded: {controllerTypes.Count} hub controllers");
 
             foreach (var controllerType in controllerTypes)
             {
@@ -55,6 +55,11 @@ namespace AppForm.HubController.Base
                 _routeTable.TryGetValue(routeKey, out var method);
 
                 return method;
+            }
+            catch(InvalidOperationException ex)
+            {
+                _logger.LogError(ex, $"Route handler not found: {route}");
+                throw;
             }
             catch(ArgumentNullException ex)
             {
@@ -83,9 +88,9 @@ namespace AppForm.HubController.Base
 
         private void AddController(TypeInfo controllerType)
         {
-            _logger.LogDebug($"Loading hub controller: {controllerType.Name}");
+            _logger.LogInformation($"Loading hub controller: {controllerType.Name}");
 
-            foreach (var method in controllerType.DeclaredMethods)
+            foreach (var method in controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
             {
                 AddControllerMethod(controllerType, method);
             }
@@ -94,6 +99,8 @@ namespace AppForm.HubController.Base
         private void AddControllerMethod(TypeInfo controllerType, MethodInfo handlerMethod)
         {
             var route = GetHubMethodRoute(controllerType, handlerMethod);
+            _logger.LogDebug($"Loaded hub route: {route}");
+
             var descriptor = new HubMethodDescriptor(controllerType, handlerMethod);
 
             _routeTable.TryAdd(route, descriptor);

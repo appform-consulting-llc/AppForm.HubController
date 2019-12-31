@@ -1,6 +1,6 @@
 {
   "name": "@appformllc/hubcontroller",
-  "version": "0.2.1",
+  "version": "0.2.6",
   "description": "AppForm.HubController Nuget package Javascript client side code",
   "main": "./dist/webpack/hubcontroller.min.js",
   "module": "./dist/webpack/hubcontroller.min.js",
